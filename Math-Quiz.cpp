@@ -87,6 +87,21 @@ string GetOperationType(stResults res)
     return diff[res.opType - 1];
 }
 
+string GetFinalResult(stResults res)
+{
+    if (res.result == enResult::Pass)
+    {
+        return "\t\tFinal Result is PASS : )";
+        
+    }
+    else
+    {
+
+        return "\t\tFinal Result is FAIL : (";
+
+    }
+}
+
 bool isCorrect(float answer, stQuiz quiz)
 {
     return answer == quiz.result;
@@ -122,7 +137,10 @@ int GetResult(stQuiz quiz)
         result = number1 * number2;
         break;
     case enOperations::Divide:
-        result = number1 / number2;
+        if (number2 == 0)
+            result = 0;
+        else
+            result = number1 / number2;
         break;
     }
     return result;
@@ -235,20 +253,11 @@ void PrintQuiz(stQuiz quiz,short quizNum,short allQuiz)
     cout << "________________\n\n";
 }
 
-void PrintFinalResult(stResults answer)
+void PrintFinalResult(stResults result)
 {
-    if (answer.result == enResult::Pass)
-    {
         cout << "\n----------------------------------------------------\n";
-        cout << "\t\tFinal Result is PASS : )";
+        cout << GetFinalResult(result);
         cout << "\n----------------------------------------------------\n";
-    }
-    else
-    {
-        cout << "\n----------------------------------------------------\n";
-        cout << "\t\tFinal Result is FAIL : (";
-        cout << "\n----------------------------------------------------\n";
-    }
 }
 
 void PrintResults(stResults res)
