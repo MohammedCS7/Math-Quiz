@@ -8,25 +8,27 @@ enum enOperations { Add = 1, Substract = 2, Multiply = 3, Divide = 4, Mixed = 5 
 
 enum enDifficulty { Easy = 1, Mid = 2, Hard = 3, Mix = 4 };
 
-enum enResult { Pass = 1 , Fail = 2};
 
-struct stQuiz
+struct stQuestion
 {
     int number1;
     int number2;
-    int result;
+    int correctAnswer;
+    int playerAnswer;
+    bool isCorrect;
     enOperations operation;
     enDifficulty difficulty;
 };
 
-struct stResults
+struct stQuiz
 {
-    int correct=0;
-    int wrong=0;
-    enResult result;
+    stQuestion questionList[100];
+    int correctAnswers=0;
+    int wrongAnswers=0;
     int quizNumber;
     enOperations opType;
     enDifficulty diffLevel;
+    bool isPass;
 };
 
 int ReadNumberInRange(string message,int from, int to)
@@ -46,7 +48,7 @@ int RandomNumber(int from, int to)
     return rand() % (to - from + 1) + from;
 }
 
-int ReadNumberOfQuiz()
+int ReadNumberOfQuestion()
 {
     int number;
     cout << "Enter Number of Quiz : " << endl;
@@ -75,21 +77,21 @@ char PlayAgain()
     return choice;
 }
 
-string GetDifficulty(stResults res)
+string GetDifficulty(enDifficulty diffi)
 {
     string diff[4] = { "Easy","Mid","Hard","Mix" };
-    return diff[res.diffLevel - 1];
+    return diff[diffi - 1];
 }
 
-string GetOperationType(stResults res)
+string GetOperationType(enOperations op)
 {
-    string diff[5] = { "Add","Substract","Multiply","Divide","Mix"};
-    return diff[res.opType - 1];
+    string ope[5] = { "Add","Substract","Multiply","Divide","Mix"};
+    return ope[op - 1];
 }
 
-string GetFinalResult(stResults res)
+string GetFinalResult(bool pass)
 {
-    if (res.result == enResult::Pass)
+    if (pass)
     {
         return "\t\tFinal Result is PASS : )";
         
@@ -102,10 +104,6 @@ string GetFinalResult(stResults res)
     }
 }
 
-bool isCorrect(float answer, stQuiz quiz)
-{
-    return answer == quiz.result;
-}
 
 enOperations ReadOperation()
 {
@@ -117,15 +115,12 @@ enDifficulty ReadDifficulty()
     return (enDifficulty)ReadNumberInRange("[1] Easy, [2] Mid, [3] Hard, [4] Mix : ", 1, 4);
 }
 
-int GetResult(stQuiz quiz)
+int GetResult(int number1,int number2,enOperations operation)
 {
     
-    int number1 = quiz.number1;
-    int number2 = quiz.number2;
-
     int result = 0;
 
-    switch (quiz.operation)
+    switch (operation)
     {
         case enOperations::Add:
             result = number1 + number2;
@@ -146,14 +141,6 @@ int GetResult(stQuiz quiz)
     return result;
 }
 
-void FillAnswers(stQuiz quizes[100], short numOfQuiz)
-{
-    for (short i = 0; i < numOfQuiz; i++)
-    {
-        quizes[i].result = GetResult(quizes[i]);
-    }
-}
-
 enDifficulty GetDiff(short choice)
 {
     return (enDifficulty)choice;
@@ -164,25 +151,17 @@ enOperations GetOpe(short choice)
     return (enOperations)choice;
 }
 
-enResult PassOrFail(stResults results)
+stQuestion GenerateQuestion(enDifficulty level,enOperations operation)
 {
-    if (results.correct >= results.wrong)
-        return enResult::Pass;
-    else
-        return enResult::Fail;
-}
+    stQuestion question;
+    question.difficulty = level;
+    question.operation = operation;
 
-stQuiz GenerateQuiz(enDifficulty level,enOperations operation)
-{
-    stQuiz quiz;
-    quiz.difficulty = level;
-    quiz.operation = operation;
-
-    if (quiz.difficulty == enDifficulty::Mix)
+    if (question.difficulty == enDifficulty::Mix)
     {
         level = GetDiff(RandomNumber(1, 3));
     }
-    if (quiz.operation == enOperations::Mixed)
+    if (question.operation == enOperations::Mixed)
     {
         operation = GetOpe(RandomNumber(1, 4));
     }
@@ -192,81 +171,53 @@ stQuiz GenerateQuiz(enDifficulty level,enOperations operation)
     case enDifficulty::Easy:
         do
         {
-            quiz.number1 = RandomNumber(1, 10);
-            quiz.number2 = RandomNumber(1, 10);
-        } while (operation == enOperations::Divide && quiz.number1 % quiz.number2 != 0);
-        quiz.operation = operation;
+            question.number1 = RandomNumber(1, 10);
+            question.number2 = RandomNumber(1, 10);
+            question.correctAnswer = GetResult(question.number1, question.number2, operation);
+        } while (operation == enOperations::Divide && question.number1 % question.number2 != 0);
+        question.operation = operation;
         break;
     case enDifficulty::Mid:
         do
         {
-            quiz.number1 = RandomNumber(10, 50);
-            quiz.number2 = RandomNumber(10, 50);
-        } while (operation == enOperations::Divide && quiz.number1 % quiz.number2 != 0);
-        quiz.operation = operation;
+            question.number1 = RandomNumber(10, 50);
+            question.number2 = RandomNumber(10, 50);
+            question.correctAnswer = GetResult(question.number1, question.number2, operation);
+        } while (operation == enOperations::Divide && question.number1 % question.number2 != 0);
+        question.operation = operation;
         break;
     case enDifficulty::Hard:
         do
         {
-            quiz.number1 = RandomNumber(50, 99);
-            quiz.number2 = RandomNumber(50, 99);
-        } while (operation == enOperations::Divide && quiz.number1 % quiz.number2 != 0);
-        quiz.operation = operation;
+            question.number1 = RandomNumber(50, 99);
+            question.number2 = RandomNumber(50, 99);
+            question.correctAnswer = GetResult(question.number1, question.number2, operation);
+        } while (operation == enOperations::Divide && question.number1 % question.number2 != 0);
+        question.operation = operation;
         break;
     }
-    return quiz;
+    return question;
 }
 
-stQuiz ReadQuizInfo()
+void PrintQuestion(stQuiz quiz, short quisNum)
 {
-    stQuiz quiz;
-    quiz.difficulty = ReadDifficulty();
-    quiz.operation = ReadOperation();
-    return quiz;
-}
-
-stResults ReadResultsInfo(stQuiz quiz,short numOfQuiz)
-{
-    stResults results;
-
-    results.opType = quiz.operation;
-    results.diffLevel = quiz.difficulty;
-    results.quizNumber = numOfQuiz;
-
-    return results;
-}
-
-void GenerateQuestions(stQuiz arr[100], short quizNum,stQuiz info)
-{
-        for (int i = 0; i < quizNum; i++)
-        {
-            arr[i] = GenerateQuiz(info.difficulty,info.operation);
-        }
-    
-}
-
-void PrintQuiz(stQuiz quiz,short quizNum,short allQuiz)
-{
-    cout << "\n\nQuestion [" << quizNum << "/" << allQuiz << "]\n" << endl;
-    cout << quiz.number1 << endl;
-    cout << quiz.number2 << " " << GetOperationChar(quiz.operation) << endl;
+    cout << "\n\nQuestion [" << quisNum + 1 << "/" << quiz.quizNumber << "]\n" << endl;
+    cout << quiz.questionList[quisNum].number1 << endl;
+    cout << quiz.questionList[quisNum].number2 << " " << GetOperationChar(quiz.questionList[quisNum].operation) << endl;
     cout << "________________\n\n";
 }
 
-void PrintFinalResult(stResults result)
-{
-        cout << "\n----------------------------------------------------\n";
-        cout << GetFinalResult(result);
-        cout << "\n----------------------------------------------------\n";
-}
 
-void PrintResults(stResults res)
+void PrintFinalResult(stQuiz quiz)
 {
-    cout << "\nNumber of Questions     : " << res.quizNumber << endl;
-    cout << "Questions Level         : " << GetDifficulty(res) << endl;
-    cout << "Operation Type          : " << GetOperationType(res) << endl;
-    cout << "Number of Right Answers : " << res.correct << endl;
-    cout << "Number of Wrong Answers : " << res.wrong << endl;
+    cout << "\n----------------------------------------------------\n";
+    cout << GetFinalResult(quiz.isPass);
+    cout << "\n----------------------------------------------------\n";
+    cout << "\nNumber of Questions     : " << quiz.quizNumber << endl;
+    cout << "Questions Level         : " << GetDifficulty(quiz.diffLevel) << endl;
+    cout << "Operation Type          : " << GetOperationType(quiz.opType) << endl;
+    cout << "Number of Right Answers : " << quiz.correctAnswers << endl;
+    cout << "Number of Wrong Answers : " << quiz.wrongAnswers << endl;
     cout << "\n----------------------------------------------------\n";
 }
 
@@ -287,78 +238,75 @@ void ChangeScreenToStart()
     system("color 0F");
 }
 
-void CheckWin(stResults results)
+
+bool CorrectQuestion(stQuestion& quiz)
 {
-    if (results.result == enResult::Pass)
+    if (quiz.playerAnswer == quiz.correctAnswer)
     {
-        ChangeScreenToCorrect();
+        quiz.isCorrect = true;
+        cout << "Right Answer :-)" << endl;
+        return true;
     }
     else
     {
-        ChangeScreenToWrong();
+        quiz.isCorrect = false;
+        cout << "The Right Answer is : " << quiz.correctAnswer << endl;
+        return false;
     }
 }
 
-stResults PlayGame(short numOfQuiz)
+void GenerateQuestions(stQuiz& quiz)
 {
-    stResults results;
-    stQuiz quiz;
-    
-    int correct = 0, wrong = 0;
-
-    quiz = ReadQuizInfo();
-
-    results = ReadResultsInfo(quiz, numOfQuiz);
-
-    stQuiz quizes[100];
-
-    GenerateQuestions(quizes, numOfQuiz, quiz);
-
-    FillAnswers(quizes, numOfQuiz);
-
-    for (short quizNum = 1; quizNum <= numOfQuiz; quizNum++)
-    {
-        
-        quiz = quizes[quizNum-1];
-        PrintQuiz(quiz, quizNum, numOfQuiz);
-        
-        
-
-        float answer = ReadAnswer();
-        if (isCorrect(answer, quiz))
+        for (int i = 0; i < quiz.quizNumber; i++)
         {
-            ChangeScreenToCorrect();
-            cout << "Right Answer :)";
-            correct++;
+            quiz.questionList[i] = GenerateQuestion(quiz.diffLevel,quiz.opType);
         }
+}
 
+void AskAndCorrectQuestions(stQuiz& quiz)
+{
+    for (int question = 0; question < quiz.quizNumber; question++)
+    {
+        PrintQuestion(quiz, question);
+        quiz.questionList[question].playerAnswer = ReadAnswer();
+        if (CorrectQuestion(quiz.questionList[question]))
+        {
+            quiz.correctAnswers++;
+            ChangeScreenToCorrect();
+        }
         else
         {
+            quiz.wrongAnswers++;
             ChangeScreenToWrong();
-            cout << "The correct answer is : " << quiz.result << endl;
-            wrong++;
         }
-        
     }
-    
-    results.correct = correct;
-    results.wrong = wrong;
-    results.result = PassOrFail(results);
+    quiz.isPass = (quiz.correctAnswers >= quiz.wrongAnswers);
+}
 
-    return results;
+void MathGame()
+{
+
+    stQuiz quiz;
+
+    quiz.quizNumber = ReadNumberOfQuestion();
+    quiz.diffLevel = ReadDifficulty();
+    quiz.opType = ReadOperation();
+
+    GenerateQuestions(quiz);
+
+    AskAndCorrectQuestions(quiz);
+
+    PrintFinalResult(quiz);
 
 }
 
-void TheGame()
+void PlayMathGame()
 {
     char again;
     do
     {
         ChangeScreenToStart();
-        stResults results = PlayGame(ReadNumberOfQuiz());
-        PrintFinalResult(results);
-        PrintResults(results);
-        CheckWin(results);
+        MathGame();
         again = PlayAgain();
     } while (again == 'Y' || again == 'y');
     
@@ -368,7 +316,7 @@ int main()
 {
     srand((unsigned)time(NULL));
 
-    TheGame();
+    PlayMathGame();
 
     return 0;
 }
