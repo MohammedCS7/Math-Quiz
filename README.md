@@ -9,8 +9,8 @@ A robust command-line mathematical quiz application built from scratch using pur
 This project is a product of raw problem-solving and pure learning. No boilerplate templates or copy-pasted code snippets were used. Every single function, data structure, and logical loop was engineered step-by-step from my own understanding. 
 
 While practicing, I hit critical software engineering milestones:
-* **The Division Precision Trap:** During development, the challenges of floating-point precision error in C++ were introduced when evaluating dynamic divisions (like 7/3), which initially caused precision drops during verification.
-* **The Engineering Fix:** Guided by architectural code reviews, I refactored the data structures, switched the quiz values to solid `int` layouts, and manually implemented localized `do-while` loops within the difficulty states to force the logic to generate clean, whole numbers where the remainder is strictly zero (`% == 0`).
+* **The Division Precision Trap:** During a technical code review session with an AI assistant, a critical floating-point precision vulnerability was identified when handling dynamic division operations (like 7/3) in C++.
+* **The Engineering Fix:** Based on the architectural logic suggested by the AI, I manually refactored my codebase, adjusted the internal struct variables to pure integer configurations, and coded the required `do-while` safety loops across all difficulty brackets to ensure only clean divisions (`% == 0`) are served to the user.
 * **The "Mix/Mixed" Architecture Challenge:** I engineered separate lookup mapping utilities (`GetDiff` and `GetOpe`) along with a dynamic randomizer to simulate true unpredictable gameplay when the user chooses mixed difficulty or mixed operations.
 
 ---
