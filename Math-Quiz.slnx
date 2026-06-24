@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="Math-Quiz.vcxproj" Id="422ade6e-413b-49a8-807d-9913e29da460" />
+</Solution>
